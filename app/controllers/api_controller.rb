@@ -11,8 +11,8 @@ class ApiController < ApplicationController
 	    get_custom_fields(autopilot_contact)
 	    if autopilot_event == "contact_added"
 	  	  response = contact_added(@freshdesk_data)
-	    elsif autopilot_event = "contact_updated"
-		  response = contact_updated(@freshdesk_data, @freshdesk_contact_id)		
+	    elsif autopilot_event == "contact_updated"
+	          response = contact_updated(@freshdesk_data, @freshdesk_contact_id)		
 	    end 
 	    response.parsed_response.has_key?("errors") ? failure_response(response) : success_response
 	  rescue Exception => e
