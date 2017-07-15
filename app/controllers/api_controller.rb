@@ -4,7 +4,7 @@ class ApiController < ApplicationController
   before_action :get_api_creds
 	#To add or update contact in freshdesk from autopilot webhook callback
 	def contacts
-	  begin
+	  #begin
 	    autopilot_contact = params["contact"]
 	    autopilot_event = params["event"]
 	    @freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
@@ -15,9 +15,9 @@ class ApiController < ApplicationController
 	          response = contact_updated(@freshdesk_data, @freshdesk_contact_id)		
 	    end 
 	    response.parsed_response.has_key?("errors") ? failure_response(response) : success_response
-	  rescue Exception => e
-	  	puts e.message
-	  end
+	  #rescue Exception => e
+	  #	puts e.message
+	  #end
 	end
 
 	private 
@@ -60,7 +60,12 @@ class ApiController < ApplicationController
 
 	#To get concatenate address 
 	def get_address(autopilot_contact)
-		autopilot_contact["MailingStreet"]+","+autopilot_contact["MailingCity"]+","+autopilot_contact["MailingCountry"]+"-"+autopilot_contact["MailingPostalCode"]
+		address = []
+		address << autopilot_contact["MailingStreet"] unless autopilot_contact["MailingStreet"].nil?
+		address << autopilot_contact["MailingCity"] unless autopilot_contact["MailingCity"].nil?
+		address << autopilot_contact["MailingCountry"] unless autopilot_contact["MailingCountry"].nil?
+		address.join(",")
+		#autopilot_contact["MailingStreet"]+","+autopilot_contact["MailingCity"]+","+autopilot_contact["MailingCountry"]+"-"+autopilot_contact["MailingPostalCode"]
 	end
 
 	#To add a contact in freshdesk 
