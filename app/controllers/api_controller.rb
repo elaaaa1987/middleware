@@ -41,6 +41,8 @@ class ApiController < ApplicationController
   		autopilot_contact["custom_fields"].each do |cf|
 			if !cf["deleted"]
 				custom_field_value = cf["value"]
+				custom_field_type, custom_field = cf["kind"].split("--")
+				puts "custom field-->#{custom_field}-#{custom_field_value}"
 				case cf["kind"]
 				when "FDADDRESS"
 					@freshdesk_data["address"] = custom_field_value
