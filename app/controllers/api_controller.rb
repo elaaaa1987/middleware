@@ -7,13 +7,21 @@ class ApiController < ApplicationController
 	  #begin
 	    autopilot_contact = params["contact"]
 	    autopilot_event = params["event"]
-	    @freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
+	    if autopilot_contact.has_key?("Company") && autopilot_contact["Company"] != ""
+          company_id = get_freshdesk_company_id(autopilot_contact["Company"])
+          Rails.logger.debug "comp id==>#{company_id}"
+          autopilot_contact["Company"] = company_id 
+        end
+        @freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
+        @freshdesk_data["company_id"] = autopilot_contact["Company"] unless autopilot_contact["Company"] == ""
+
+	    #@freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
 	    get_custom_fields(autopilot_contact)
 	    if autopilot_event == "contact_added"
 	  	  response = contact_added(@freshdesk_data)
 	    elsif autopilot_event == "contact_updated"
 		  Rails.logger.info "Update response from autopilotttttttttttttttttt"
-	          response = contact_updated(@freshdesk_data, @freshdesk_contact_id)
+	      response = contact_updated(@freshdesk_data, @freshdesk_contact_id)
 		  Rails.logger.debug "#{response}"		
 	    end 
 	    response.parsed_response.has_key?("errors") ? failure_response(response) : success_response
@@ -23,6 +31,34 @@ class ApiController < ApplicationController
 	end
 
 	private 
+
+	def get_freshdesk_company_id(comp)
+       response = HTTParty.get(
+        "#{@api_domain}companies",
+        basic_auth: { username: @api_key, password: "password" },
+        headers: { 'Content-Type' => 'application/json' }
+        )
+        if response.has_key?("code")
+            Rails.logger.debug "#{response['code']}"
+        else
+            Rails.logger.info "company response====="
+            Rails.logger.debug "#{response}"
+            company_id = response.collect{|x| p x[:id] if x[:name] == comp}.compact.first
+            if company_id.nil?
+                     response = HTTParty.post(
+                            "#{@api_domain}companies",
+                            basic_auth: { username: @api_key, password: "password" },
+                            headers: { 'Content-Type' => 'application/json' },
+                            body: {'name' => comp}
+                    )
+                    Rails.logger.info "Company Created"
+                    Rails.logger.debug "#{response}"
+                    company_id = response.id
+            end
+        end
+       company_id
+    end
+
 
 	#To initialize freshdesk api data
 	def initialize_freshdesk_data(autopilot_contact,autopilot_event)
