@@ -12,7 +12,9 @@ class ApiController < ApplicationController
 	    if autopilot_event == "contact_added"
 	  	  response = contact_added(@freshdesk_data)
 	    elsif autopilot_event == "contact_updated"
-	          response = contact_updated(@freshdesk_data, @freshdesk_contact_id)		
+		  #Rails.logger.info "Update response from autopilotttttttttttttttttt"
+	          response = contact_updated(@freshdesk_data, @freshdesk_contact_id)
+		  #Rails.logger.debug "#{response}"		
 	    end 
 	    response.parsed_response.has_key?("errors") ? failure_response(response) : success_response
 	  #rescue Exception => e
@@ -37,13 +39,16 @@ class ApiController < ApplicationController
 
 	#To get the custom fileds 
 	def get_custom_fields(autopilot_contact)
-	  if autopilot_contact.has_key?("custom_fields")
-  		autopilot_contact["custom_fields"].each do |cf|
-			if !cf["deleted"]
-				custom_field_value = cf["value"]
-				custom_field_type, custom_field = cf["kind"].split("--")
-				puts "custom field-->#{custom_field}-#{custom_field_value}"
-				case cf["kind"]
+	  if autopilot_contact.has_key?("custom")
+  		autopilot_contact["custom"].each do |key,value|
+			#if !cf["deleted"]
+				#Rails.logger.info "cutom fieldsssssssssssss"
+				#Rails.logger.info "#{key}"
+				#Rails.logger.debug "#{value}"
+				custom_field_value = value
+				custom_field_type, custom_field = key.split("--")
+				#Rails.logger.debug "custom field-->#{custom_field}-#{custom_field_value}"
+				case custom_field
 				when "FDADDRESS"
 					@freshdesk_data["address"] = custom_field_value
 				when "FDACCOUNTID"
@@ -53,7 +58,7 @@ class ApiController < ApplicationController
 				else
 				  #@freshdesk_data["custom_fields"][cf["kind"]] = custom_field_value
 				end	
-			end
+			#end
 		end
    	   end
 	end
@@ -80,6 +85,9 @@ class ApiController < ApplicationController
 
 	#To update contacts in freshdesk
 	def contact_updated(freshdesk_data,contact_id)
+		#Rails.logger.info "Update method id and data"
+		#Rails.logger.debug "#{@api_domain}-#{contact_id}-#{@api_key}"
+		#Rails.logger.debug "#{freshdesk_data.to_json}"
 	  response = HTTParty.put(
 	   "#{@api_domain}contacts/#{contact_id}", 
 		  basic_auth: { username: @api_key, password: "password" },
@@ -98,9 +106,9 @@ class ApiController < ApplicationController
     def failure_response(response)
 		puts error = response.parsed_response["description"]
 	  	response.parsed_response["errors"].each do |e|
-	  		puts "======================="
-	  		puts e["field"]+ " - "+e["message"]
-	  		puts "=========================="
+	  		Rails.logger.info "======================="
+	  		Rails.logger.debug "#{e['field']}  - #{e['message']}"
+	  		Rails.logger.info "=========================="
 	  	end
 	  	render :json => {"status" => false, "message" =>  response.parsed_response["errors"] }
 	end
