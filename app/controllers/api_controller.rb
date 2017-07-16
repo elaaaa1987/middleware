@@ -41,7 +41,9 @@ class ApiController < ApplicationController
         
         Rails.logger.info "company response====="
         Rails.logger.debug "#{response}"
-        company_id = response.collect{|x| p x[:id] if x[:name] == comp}.compact.first
+        company_id = response.collect{|x| p x["id"] if x["name"] == comp}.compact.first
+        Rails.logger.debug "#{response.collect{|x| p x["id"] if x["name"] == comp}.compact}"
+        Rails.logger.debug "#{company_id}"
         if company_id.nil?
             response = HTTParty.post(
                     "#{@api_domain}companies",
