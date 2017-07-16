@@ -7,6 +7,9 @@ class ApiController < ApplicationController
 	  #begin
 	    autopilot_contact = params["contact"]
 	    autopilot_event = params["event"]
+	    if autopilot_contact.has_key?("Company")
+	    	company_id = get_freshdesk_company_id(autopilot_contact["Company"])
+	    end
 	    @freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
 	    get_custom_fields(autopilot_contact)
 	    if autopilot_event == "contact_added"
@@ -22,7 +25,22 @@ class ApiController < ApplicationController
 	  #end
 	end
 
-	private 
+	private
+
+	def get_freshdesk_company_id(comp)
+		response = HTTParty.get(
+	    "#{@api_domain}companies", 
+		  basic_auth: { username: @api_key, password: "password" },
+		  headers: { 'Content-Type' => 'application/json' }
+	    )
+	    if response.parsed_response.has_key?("errors")
+	    	failure_response(response)
+	    else
+	    	Rails.logger.info "company response====="
+	    	Rails.logger.debug "#{response}"
+	    end
+
+	end 
 
 	#To initialize freshdesk api data
 	def initialize_freshdesk_data(autopilot_contact,autopilot_event)
