@@ -38,9 +38,7 @@ class ApiController < ApplicationController
         basic_auth: { username: @api_key, password: "password" },
         headers: { 'Content-Type' => 'application/json' }
         )
-        if response.has_key?("code")
-            Rails.logger.debug "#{response['code']}"
-        else
+        if response
             Rails.logger.info "company response====="
             Rails.logger.debug "#{response}"
             company_id = response.collect{|x| p x[:id] if x[:name] == comp}.compact.first
