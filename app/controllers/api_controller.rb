@@ -9,7 +9,7 @@ class ApiController < ApplicationController
 	    autopilot_event = params["event"]
 	    if autopilot_contact.has_key?("Company") && autopilot_contact["Company"] != ""
           company_id = get_freshdesk_company_id(autopilot_contact["Company"])
-          Rails.logger.debug "comp id==>#{company_id}"
+          #Rails.logger.debug "comp id==>#{company_id}"
           autopilot_contact["Company"] = company_id 
         end
         @freshdesk_data = initialize_freshdesk_data(autopilot_contact,autopilot_contact["event"])
@@ -20,9 +20,9 @@ class ApiController < ApplicationController
 	    if autopilot_event == "contact_added"
 	  	  response = contact_added(@freshdesk_data)
 	    elsif autopilot_event == "contact_updated"
-		  Rails.logger.info "Update response from autopilotttttttttttttttttt"
+		  #Rails.logger.info "Update response from autopilotttttttttttttttttt"
 	      response = contact_updated(@freshdesk_data, @freshdesk_contact_id)
-		  Rails.logger.debug "#{response}"		
+		  #Rails.logger.debug "#{response}"		
 	    end 
 	    response.parsed_response.has_key?("errors") ? failure_response(response) : success_response
 	  #rescue Exception => e
@@ -39,11 +39,11 @@ class ApiController < ApplicationController
         headers: { 'Content-Type' => 'application/json' }
         )
         
-        Rails.logger.info "company response====="
-        Rails.logger.debug "#{response}"
+        #Rails.logger.info "company response====="
+        #Rails.logger.debug "#{response}"
         company_id = response.collect{|x| p x["id"] if x["name"] == comp}.compact.first
-        Rails.logger.debug "#{response.collect{|x| p x["id"] if x["name"] == comp}.compact}"
-        Rails.logger.debug "#{company_id}"
+        #Rails.logger.debug "#{response.collect{|x| p x["id"] if x["name"] == comp}.compact}"
+        #Rails.logger.debug "#{company_id}"
         if company_id.nil?
             response = HTTParty.post(
                     "#{@api_domain}companies",
@@ -51,8 +51,8 @@ class ApiController < ApplicationController
                     headers: { 'Content-Type' => 'application/json' },
                     body: {'name' => comp}.to_json
             )
-            Rails.logger.info "Company Created"
-            Rails.logger.debug "#{response}"
+            #Rails.logger.info "Company Created"
+            #Rails.logger.debug "#{response}"
             company_id = response.id
         end
         
@@ -62,8 +62,9 @@ class ApiController < ApplicationController
 
 	#To initialize freshdesk api data
 	def initialize_freshdesk_data(autopilot_contact,autopilot_event)
+		lastname = autopilot_contact["LastName"].nil? ? "" : autopilot_contact["LastName"]
 	  {
-	    "name" => autopilot_contact["FirstName"] +" "+autopilot_contact["LastName"],
+	    "name" => autopilot_contact["FirstName"] +" "+lastname,
 	  	"email" => autopilot_contact["Email"],
 	  	"phone" => autopilot_contact["Phone"],
 	  	"mobile" => autopilot_contact["MobilePhone"],
@@ -106,7 +107,6 @@ class ApiController < ApplicationController
 		address << autopilot_contact["MailingCity"] unless autopilot_contact["MailingCity"].nil?
 		address << autopilot_contact["MailingCountry"] unless autopilot_contact["MailingCountry"].nil?
 		address.join(",")
-		#autopilot_contact["MailingStreet"]+","+autopilot_contact["MailingCity"]+","+autopilot_contact["MailingCountry"]+"-"+autopilot_contact["MailingPostalCode"]
 	end
 
 	#To add a contact in freshdesk 
