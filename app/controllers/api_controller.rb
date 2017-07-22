@@ -168,7 +168,11 @@ class ApiController < ApplicationController
 
     #To get api credentianls from account in middleware app
 	def get_api_creds
-		account = Account.first
+		#account = Account.first
+		Rails.logger.info "get api details"
+		Rails.logger.debug "#{params}"
+		account_id = params["contact"]["custom"]["integer--FDACCOUNTID"]
+		account = Account.find_by(:account_id => account_id)
 		@api_domain = account.try(:api_domain)
 		@api_key = account.try(:api_key)
 	end
