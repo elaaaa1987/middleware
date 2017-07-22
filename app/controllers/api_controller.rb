@@ -1,7 +1,8 @@
-
+require 'json'
 class ApiController < ApplicationController
-  skip_before_action :verify_authenticity_token, :only => [:contacts]
+  skip_before_action :verify_authenticity_token, :only => [:contacts, :add_account]
   before_action :get_api_creds
+  before_action :check_account, :only =>[:add_account]
 	#To add or update contact in freshdesk from autopilot webhook callback
 	def contacts
 	  #begin
@@ -28,6 +29,20 @@ class ApiController < ApplicationController
 	  #rescue Exception => e
 	  #	puts e.message
 	  #end
+	end
+
+	def add_account
+		if @account.nil?
+			@account = Account.create(set_account_params)
+		else
+			@account.update_attributes(set_account_params)
+		end
+		#Rails.logger.debug "#{@account}"
+		if @account
+			render :json => {"status" => true, "message" => "Success", "body" => @account}
+		else
+			render :json => {"status" => false, "message" => "Failed"}
+		end
 	end
 
 	private 
@@ -156,6 +171,14 @@ class ApiController < ApplicationController
 		account = Account.first
 		@api_domain = account.try(:api_domain)
 		@api_key = account.try(:api_key)
+	end
+
+	def check_account
+		@account = Account.find_by(:account_id => params["account"]["account_id"])
+	end
+
+	def set_account_params
+		params.require(:account).permit(:account_id, :api_domain, :api_key)
 	end
 
 end
