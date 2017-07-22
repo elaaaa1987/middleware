@@ -51,9 +51,10 @@ class ApiController < ApplicationController
                     headers: { 'Content-Type' => 'application/json' },
                     body: {'name' => comp}.to_json
             )
-            #Rails.logger.info "Company Created"
-            #Rails.logger.debug "#{response}"
-            company_id = response.id
+            Rails.logger.info "Company Created"
+            Rails.logger.debug "#{response}"
+	   
+            company_id = response["id"] if response
         end
         
        company_id
@@ -66,8 +67,9 @@ class ApiController < ApplicationController
 	  {
 	    "name" => autopilot_contact["FirstName"] +" "+lastname,
 	  	"email" => autopilot_contact["Email"],
-	  	"phone" => autopilot_contact["Phone"],
-	  	"mobile" => autopilot_contact["MobilePhone"],
+	  	"phone" => autopilot_contact["Phone"].nil? ? "" : autopilot_contact["Phone"].to_s,
+		"job_title" => autopilot_contact["Title"],
+	  	"mobile" => autopilot_contact["MobilePhone"].nil? ? "" : autopilot_contact["MobilePhone"].to_s,
 	  	"twitter_id" => autopilot_contact["Twitter"],
 	  	"address" => get_address(autopilot_contact),
 	  	"custom_fields" => {}
