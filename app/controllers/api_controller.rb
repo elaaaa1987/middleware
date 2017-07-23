@@ -171,8 +171,7 @@ class ApiController < ApplicationController
 		#account = Account.first
 		Rails.logger.info "get api details"
 		Rails.logger.debug "#{params}"
-		account_id = params["contact"]["custom"]["integer--FDACCOUNTID"]
-		account = Account.find_by(:account_id => account_id)
+		account = Account.find_by(:account_id => params["account_id"])
 		@api_domain = account.try(:api_domain)
 		@api_key = account.try(:api_key)
 	end
