@@ -5,4 +5,5 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
-p accounts = Account.create({account_id: ENV["ACCOUNT_ID"], api_domain: ENV["API_DOMAIN"], api_key: ENV["API_KEY"]})
+#p accounts = Account.create({account_id: ENV["ACCOUNT_ID"], api_domain: ENV["API_DOMAIN"], api_key: ENV["API_KEY"]})
+AdminUser.create!(email: 'admin@middleware.com', password: 'Mako#12345', password_confirmation: 'Mako#12345')
